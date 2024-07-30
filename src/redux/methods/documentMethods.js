@@ -150,7 +150,7 @@ export const checkJobStatus = () => {
         });
 
         jobStatus = statusResponse.data;
-      } while (jobStatus.status === "processing");
+      } while (jobStatus.status === "ONGOING");
 
       if (jobStatus.status === true) {
         dispatch({

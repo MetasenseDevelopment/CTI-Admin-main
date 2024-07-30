@@ -105,12 +105,12 @@ export default function UploadDoc() {
           size="large"
           loading={loading}
           onClick={handleUploadDocument}
-          disabled={jobStatus.status === "processing"}
+          disabled={jobStatus.status === "ONGOING"}
         >
           Execute
         </Button>
         <p className="pl-5 font-poppins font-medium text-md">
-          {jobStatus.status === "processing" ? (
+          {jobStatus.status === "ONGOING" ? (
             <span className="text-red-500">
               System currently processing document JobId {jobStatus.jobId},
               please wait.
