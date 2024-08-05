@@ -36,14 +36,17 @@ import {
     };
     
     // Action to scrape PDFs
-    export const scrapPDFs = (companyIds) => {
+    export const scrapPDFs = (companyName, year) => {
       return async (dispatch) => {
         try {
           dispatch({ type: SCRAP_PDF_REQUEST });
     
           const response = await axios.post(
             `${BASE_URL}/api/document/scrap-pdfs`,
-            { companyIds },
+            {
+              company_name:companyName,
+              year_of_emissions:year,
+            },
             {
               headers: {
                 "Content-Type": "application/json",

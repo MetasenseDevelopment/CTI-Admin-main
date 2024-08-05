@@ -11,7 +11,7 @@ import { toast } from "sonner";
 // Components
 import BasePageContainer from "../layout/PageContainer";
 import { webRoutes } from "../../routes/web";
-import { fetchCompaniesWithoutPDF } from "../../redux/methods/companiesMethods";
+import { fetchCompaniesWithoutPDF, scrapPDFs } from "../../redux/methods/companiesMethods";
 
 const breadcrumb = {
   items: [
@@ -43,6 +43,10 @@ export default function Reports() {
     setCurrentRecord(record);
     setIsModalVisible(true);
   };
+
+  const scrapData = (_,record) => { 
+     dispatch(scrapPDFs(record.company_name,record.year_of_emissions))
+   }
 
   const handleAcceptChanges = async () => {
     try {
@@ -149,7 +153,7 @@ export default function Reports() {
       dataIndex:"fetch_pdf",
       key:"fetch_pdf",
       render:(_,record)=>(
-         <button className="bg-black text-white p-2 rounded-md">Fetch </button>
+         <button onClick={()=>scrapData(_,record)} className="bg-black text-white p-2 rounded-md">Fetch </button>
 
       )
 
