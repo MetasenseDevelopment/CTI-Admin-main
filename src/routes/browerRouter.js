@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import loadable from "@loadable/component";
 import Reports from "../components/reports";
+import Companies from "../components/companies";
 
 //Utils
 import { webRoutes } from "./web";
@@ -97,6 +98,10 @@ export const browserRouter = createBrowserRouter([
        {
         path: webRoutes.reports,
         element: <Reports />,
+      },
+       {
+        path: webRoutes.companies,
+        element: <Companies />,
       },
     ],
   },

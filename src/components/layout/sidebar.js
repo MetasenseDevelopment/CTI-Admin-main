@@ -50,5 +50,11 @@ export const sidebar = [
   name: "Reports",
   icon: <TbReportSearch />,
 },
+{
+  path: webRoutes.companies,
+  key: webRoutes.companies,
+  name: "Companies",
+  icon: <TbReportSearch />,
+},
 
 ];
