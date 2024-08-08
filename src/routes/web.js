@@ -10,5 +10,6 @@ export const webRoutes = {
   uploadDocumentUnstructured: "/upload-unstructured",
   document: "/document",
   reports:"/reports",
-  companies:"/companies"
+  settings: "/settings",
+  companies: "/companies"
 };

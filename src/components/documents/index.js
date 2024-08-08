@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Form, Input, Modal, Select as AntdSelect } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  Modal,
+  Select as AntdSelect,
+} from "antd";
 import { toast } from "sonner";
 import axios from "axios";
 import Select from "react-select";
@@ -37,7 +43,7 @@ const breadcrumb = {
   ],
 };
 
-const DraggableTable = ({ columns, rows, onviewReporting }) => {
+const DraggableTable = ({ columns, rows, onviewReporting, handlingNotes }) => {
   const [cols, setCols] = useState(columns);
   const [dragOver, setDragOver] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -191,6 +197,19 @@ const DraggableTable = ({ columns, rows, onviewReporting }) => {
                             View PDF
                           </Button>
                         )
+                      ) : col.dataIndex === "note" &&
+                        row[col.dataIndex] !== "-" &&
+                        row[col.dataIndex] !== "" ? (
+                        <Button
+                          type="link"
+                          onClick={() => {
+                            // Handle the action when the "See Your Notes" button is clicked
+                            handlingNotes(row[col.dataIndex]);
+                            console.log("See your notes", row[col.dataIndex]);
+                          }}
+                        >
+                          See Your Notes
+                        </Button>
                       ) : (
                         row[col.dataIndex]
                       )}
@@ -245,8 +264,12 @@ const Documents = () => {
     name: "",
     type: "text",
   });
+  const [currentnotesData, setCurrentNotesData] = useState(null);
+  const [isnotesModalvisibale, setIsnotesModalVisible] = useState(false);
+  const [mostRecentArrayForModalDropdown, setMostRecentArrayForModalDropdown] = useState([]);
 
   const [form] = Form.useForm();
+  const { Option } = Select;
 
   useEffect(() => {
     if (currentRecord) {
@@ -257,6 +280,11 @@ const Documents = () => {
   const onviewReporting = (record) => {
     setCurrentRecord(record);
     setIsReportingModalVisible(true);
+  };
+  const handlingNotes = (data) => {
+    console.log("Inside the handlingNotes " + data);
+    setCurrentNotesData(data);
+    setIsnotesModalVisible(true);
   };
 
   const dispatch = useDispatch();
@@ -317,6 +345,38 @@ const Documents = () => {
     setFile(e.target.files[0]);
     handleImport(e.target.files[0]);
   };
+  useEffect(() => {
+    const getAdminSelectedReasonForReportDropDown = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/api/document/get-admin-selected-reasons`);
+        const data = response.data;
+
+        if (data && Array.isArray(data.data) && data.data.length > 0) {
+          const mostRecent = data.data[data.data.length - 1];
+          console.log("Most Recent:", mostRecent);
+
+          // Check if reasons is an array
+          if (Array.isArray(mostRecent.reasons)) {
+            setMostRecentArrayForModalDropdown(mostRecent.reasons);
+          } else {
+            console.error("Expected 'reasons' to be an array, but got:", mostRecent.reasons);
+          }
+        } else {
+          console.log("No data found");
+        }
+      } catch (error) {
+        if (error.response) {
+          console.error("Error response:", error.response.data);
+        } else if (error.request) {
+          console.error("Error request:", error.request);
+        } else {
+          console.error("Error message:", error.message);
+        }
+      }
+    };
+
+    getAdminSelectedReasonForReportDropDown();
+  }, []);
 
   const handleImport = async (selectedFile) => {
     if (!selectedFile) {
@@ -520,6 +580,7 @@ const Documents = () => {
               columns={columns}
               rows={documents}
               onviewReporting={onviewReporting}
+              handlingNotes={handlingNotes}
             />
           </DndProvider>
         ) : (
@@ -615,7 +676,6 @@ const Documents = () => {
           console.log("Cancel");
           setCurrentRecord(null); // Clear the current record
           setIsReportingModalVisible(false); // Hide the modal
-          // setNonEditableMessage(false); // Reset the message
         }}
         footer={null}
       >
@@ -636,32 +696,65 @@ const Documents = () => {
               } catch (error) {
                 console.error("Error saving data", error);
               }
-
               setIsReportingModalVisible(false);
             }}
           >
-            {Object.keys(currentRecord).map((key, index) => (
-              <Form.Item
-                key={key}
-                label={key
-                  .replace(/_/g, " ")
-                  .replace(/\b\w/g, (char) => char.toUpperCase())}
-                name={key}
-              >
-                <Input
-                  disabled={index < 4}
-                  onClick={() => {
-                    if (index < 4) {
-                      // setNonEditableMessage(true);
-                      console.log("Message for non editable message ");
-                    }
-                  }}
-                />
-              </Form.Item>
-            ))}
-            {/* {nonEditableMessage && (
-            <p style={{ color: 'red' }}>The first four fields cannot be changed.</p>
-          )} */}
+            {Object.keys(currentRecord).map(
+              (key, index) =>
+                key !== "reporting_comments" &&
+                key !== "reason_for_reporting" && (
+                  <Form.Item
+                    key={key}
+                    label={key
+                      .replace(/_/g, " ")
+                      .replace(/\b\w/g, (char) => char.toUpperCase())}
+                    name={key}
+                  >
+                    {key === "note" ? (
+                      <Input.TextArea
+                        onClick={() => {
+                          if (index < 4) {
+                            console.log("Message for non editable message ");
+                          }
+                        }}
+                      />
+                    ) : (
+                      <Input
+                        disabled={
+                          key === "added_date" ||
+                          key === "created_at" ||
+                          key === "id" ||
+                          key === "language_code"
+                        }
+                      />
+                    )}
+                  </Form.Item>
+                )
+            )}
+
+            <Form.Item
+              label="Reporting Comments"
+              name="reporting_comments"
+              rules={[
+                { required: true, message: "Please input your comments!" },
+              ]}
+            >
+              <Input.TextArea />
+            </Form.Item>
+            <Form.Item
+      label="Reason for Reporting"
+      name="reason_for_reporting"
+      rules={[{ required: true, message: "Please select a reason!" }]}
+    >
+      <AntdSelect placeholder="Select a reason">
+        {mostRecentArrayForModalDropdown.map((reason, index) => (
+          <AntdSelect.Option key={index} value={reason}>
+            {reason}
+          </AntdSelect.Option>
+        ))}
+      </AntdSelect>
+    </Form.Item>
+
             <Form.Item>
               <Button
                 type="primary"
@@ -671,6 +764,30 @@ const Documents = () => {
                 Save
               </Button>
             </Form.Item>
+          </Form>
+        )}
+      </Modal>
+
+      {/** Notes Modal */}
+
+      <Modal
+        title="Notes"
+        visible={isnotesModalvisibale}
+        onCancel={() => {
+          console.log("Cancel");
+          setCurrentNotesData(null); // Clear the current record
+          setIsnotesModalVisible(false); // Hide the modal
+        }}
+      >
+        {currentnotesData && (
+          <Form
+            form={form}
+            onFinish={() => {
+              setIsnotesModalVisible(false); // Hide the modal after form submission
+              // Handle form submission logic here if needed
+            }}
+          >
+            <p>{currentnotesData}</p>
           </Form>
         )}
       </Modal>

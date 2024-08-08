@@ -37,14 +37,20 @@ export default function Reports() {
 
   useEffect(() => {
     dispatch(fetchCompaniesWithoutPDF());
+    
   }, [dispatch]);
 
   const handleSeeChanges = (record) => {
+    console.log(JSON.stringify(record)+"...........checking the whole record for the Year Fieid")
     setCurrentRecord(record);
     setIsModalVisible(true);
   };
 
   const scrapData = (_,record) => { 
+    console.log(".......year_of_emission........"+JSON.stringify(record))
+    console.log("Year and Name in Frontend .......................... in companiesMethod.js "+record.company_name,record.year_of_emissions)
+    console.log("Year and Name in Frontend .......................... in companiesMethod.js "+record)
+
      dispatch(scrapPDFs(record.company_name,record.year_of_emissions))
    }
 
@@ -166,7 +172,7 @@ export default function Reports() {
         columns={columns}
         dataSource={companiesWithoutPDFs}
         rowKey="id"
-        loading={loading}
+        // loading={loading}
       />
 
       <Modal

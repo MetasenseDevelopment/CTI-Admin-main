@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button, Modal, Table } from "antd";
 import { useDispatch, useSelector } from "react-redux";
@@ -6,7 +5,6 @@ import axios from "axios";
 import { BASE_URL } from "../../redux/constants/constants";
 import { getStructuredDocuments } from "../../redux/methods/documentMethods";
 import { toast } from "sonner";
-// import {format}
 
 // Components
 import BasePageContainer from "../layout/PageContainer";
@@ -19,7 +17,7 @@ const breadcrumb = {
       title: <a href={webRoutes.dashboard}>Dashboard</a>,
     },
     {
-      key: webRoutes.report,
+      key: webRoutes.reports,
       title: <a href={webRoutes.reports}>Reports</a>,
     },
   ],
@@ -30,8 +28,13 @@ export default function Reports() {
   const { documents, loading } = useSelector(
     (state) => state.getStructuredDocumentsReducer
   );
+
+  // States For Report Modal
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentRecord, setCurrentRecord] = useState(null);
+  // States For Notes Modal
+  const [isNotesModalVisible, setIsNotesModalVisible] = useState(false);
+  const [currentNote, setCurrentNote] = useState("");
 
   useEffect(() => {
     dispatch(getStructuredDocuments());
@@ -40,6 +43,11 @@ export default function Reports() {
   const handleSeeChanges = (record) => {
     setCurrentRecord(record);
     setIsModalVisible(true);
+  };
+
+  const handleSeeNotes = (record) => {
+    setCurrentNote(record.reporting_comments);
+    setIsNotesModalVisible(true);
   };
 
   const handleAcceptChanges = async () => {
@@ -133,7 +141,7 @@ export default function Reports() {
       },
     },
     {
-      title: "Reported by Admin",
+      title: "Changes",
       dataIndex: "reported_by_admin",
       key: "reported_by_admin",
       render: (_, record) => (
@@ -142,17 +150,34 @@ export default function Reports() {
         </Button>
       ),
     },
+    {
+      title: "Reporting Comments",
+      dataIndex: "reporting_comments",
+      key: "reporting_comments",
+      render: (_, record) => (
+        <Button type="link" onClick={() => handleSeeNotes(record)}>
+          Comments of Reporting 
+        </Button>
+      ),
+    },
+    {
+      title: "Reason for Comments",
+      dataIndex: "reason_for_reporting",
+      key: "reason_for_reporting",
+    }
   ];
 
   return (
-    <BasePageContainer breadcrumb={breadcrumb}>
+    <BasePageContainer  breadcrumb={breadcrumb}>
       <Table
+       
         columns={columns}
         dataSource={documents}
         rowKey="id"
         loading={loading}
+        scroll={{ x: 'max-content' }}
       />
-
+     {/* Modal For Report */}
       <Modal
         visible={isModalVisible}
         title="Review Changes"
@@ -181,8 +206,8 @@ export default function Reports() {
             <div className="flex flex-col">
               <div className="flex font-bold bg-gray-200 border-b border-gray-300">
                 <div className="flex-1 p-2 border-r border-gray-300 truncate">Field Name</div>
-                <div className="flex-1 p-2 border-r border-gray-300 truncate">Old Data</div>
-                <div className="flex-1 p-2 truncate">New Data</div>
+                <div className="flex-1 p-2 border-r border-gray-300 truncate">Original Data</div>
+                <div className="flex-1 p-2 truncate">Reported Data</div>
               </div>
               {fieldData.map(({ key, oldValue, newValue }) => (
                 <div className="flex border-b border-gray-300" key={key}>
@@ -195,8 +220,32 @@ export default function Reports() {
           </div>
         )}
       </Modal>
+
+      {/* Modal For Reoprting Comment */}
+      <Modal
+        visible={isNotesModalVisible}
+        title="Reporting Comments"
+        onCancel={() => setIsNotesModalVisible(false)}
+        footer={[
+          <Button
+            key="close"
+            onClick={() => setIsNotesModalVisible(false)}
+            className="bg-black text-white"
+          >
+            Close
+          </Button>,
+        ]}
+        className="max-w-4xl max-h-[80vh] overflow-auto"
+      >
+        <div className="p-4 max-h-[60vh] overflow-y-auto">
+          <div className="flex flex-col">
+            <div className="font-bold bg-gray-200 p-2 border-b border-gray-300">
+              Reporting Comments
+            </div>
+            <div className="p-2 border-b border-gray-300">{currentNote}</div>
+          </div>
+        </div>
+      </Modal>
     </BasePageContainer>
   );
 }
-
-

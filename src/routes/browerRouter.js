@@ -1,7 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import loadable from "@loadable/component";
 import Reports from "../components/reports";
-import Companies from "../components/companies";
 
 //Utils
 import { webRoutes } from "./web";
@@ -16,6 +15,8 @@ import UserDetail from "../components/user_detail";
 import Redirect from "../components/layout/Redirect";
 import RequireAuth from "./RequireAuth";
 import NotFoundPage from "../components/error/NotFoundPage";
+import Settings from "../components/settings";
+import Companies from '../components/companies'
 
 //Load Pages
 const Dashboard = loadable(() => import("../components/dashboard"), {
@@ -99,7 +100,11 @@ export const browserRouter = createBrowserRouter([
         path: webRoutes.reports,
         element: <Reports />,
       },
-       {
+      {
+        path: webRoutes.settings,
+        element: <Settings />,
+      },
+      {
         path: webRoutes.companies,
         element: <Companies />,
       },

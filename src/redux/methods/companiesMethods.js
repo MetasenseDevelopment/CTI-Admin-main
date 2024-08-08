@@ -20,10 +20,11 @@ import {
               "Content-Type": "application/json",
             },
           });
-    
+          console.log("fetchCompaniesWithoutPDF"+JSON.stringify(response.data.data))
           dispatch({
             type: FETCH_COMPANIES_WITHOUT_PDF_SUCCESS,
             payload: response.data.data,
+            
           });
         } catch (error) {
           console.error(error);
@@ -37,6 +38,7 @@ import {
     
     // Action to scrape PDFs
     export const scrapPDFs = (companyName, year) => {
+      console.log("Year and Name in Frontend .......................... in // Action to scrape PDFs "+companyName,year)
       return async (dispatch) => {
         try {
           dispatch({ type: SCRAP_PDF_REQUEST });
